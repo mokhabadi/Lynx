@@ -1,46 +1,21 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Security;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace Lynx
 {
     public class Link
     {
-        Stream stream;
+        readonly Stream stream;
 
-        public event Action<Header, byte[]>? Received;
-        public event Action<bool>? Ended;
-
-        public Link() { }
+        public event Action<Header, byte[]> Received = delegate { };
+        public event Action<bool> Ended = delegate { };
 
         public Link(Stream stream)
         {
             this.stream = stream;
             Receive();
-        }
-
-        public async Task<bool> ConnectAsync(string domain, int port)
-        {
-            try
-            {
-                ServicePointManager.DnsRefreshTimeout = 0;
-                IPAddress[] addresses = await Dns.GetHostAddressesAsync(domain);
-                TcpClient tcpClient = new() { NoDelay = true };
-                await tcpClient.ConnectAsync(IPAddress.Loopback, port);
-                SslStream sslStream = new(tcpClient.GetStream());
-                sslStream.AuthenticateAsClient(domain);
-                stream = sslStream;
-                Receive();
-            }
-            catch
-            {
-            }
-
-            return stream != null;
         }
 
         async void Receive()
@@ -51,18 +26,18 @@ namespace Lynx
 
                 if (bytes[0] == 0)
                 {
-                    Ended?.Invoke(true);
+                    Ended(true);
                     return;
                 }
 
                 bytes = await Receive(bytes[0]);
                 Header header = await Packer.Unpack<Header>(bytes);
                 bytes = await Receive(header.ContentSize);
-                Received?.Invoke(header, bytes);
+                Received(header, bytes);
             }
             catch
             {
-                Ended?.Invoke(false);
+                Ended(false);
                 return;
             }
 
