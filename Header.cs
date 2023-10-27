@@ -1,12 +1,14 @@
-﻿namespace Lynx
+﻿using System.Text.Json.Serialization;
+
+namespace Lynx
 {
     public class Header
     {
-        public long Id { get; }
-        public MessageType Type { get; }
-        public string Handler { get; }
-        public string Command { get; }
-        public int ContentSize { get; set; }
+        [JsonPropertyName("I")] public long Id { get; }
+        [JsonPropertyName("T")] public MessageType Type { get; }
+        [JsonPropertyName("H")] public string Handler { get; }
+        [JsonPropertyName("C")] public string Command { get; }
+        [JsonPropertyName("S")] public int ContentSize { get; set; }
 
         public Header(long id, MessageType type, string handler, string command)
         {
