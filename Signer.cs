@@ -4,18 +4,21 @@ namespace Lynx
 {
     public static class Signer
     {
-        public static byte[] Sign(byte[] key, byte[] bytes)
+        readonly static HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA256;
+        readonly static RSASignaturePadding padding = RSASignaturePadding.Pss;
+
+        public static byte[] Sign(byte[] privateKey, byte[] bytes)
         {
             RSA RSA = RSA.Create();
-            RSA.ImportRSAPrivateKey(key, out _);
-            return RSA.SignData(bytes, HashAlgorithmName.SHA256, RSASignaturePadding.Pss);
+            RSA.ImportRSAPrivateKey(privateKey, out _);
+            return RSA.SignData(bytes, hashAlgorithm, padding);
         }
 
-        public static bool Verify(byte[] key, byte[] bytes, byte[] signedBytes)
+        public static bool Verify(byte[] publicKey, byte[] bytes, byte[] signedBytes)
         {
             RSA RSA = RSA.Create();
-            RSA.ImportRSAPublicKey(key, out _);
-            return RSA.VerifyData(bytes, signedBytes, HashAlgorithmName.SHA256, RSASignaturePadding.Pss);
+            RSA.ImportRSAPublicKey(publicKey, out _);
+            return RSA.VerifyData(bytes, signedBytes, hashAlgorithm, padding);
         }
     }
 }
