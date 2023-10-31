@@ -32,5 +32,15 @@ namespace Lynx
             T? @object = await JsonSerializer.DeserializeAsync<T>(deflateStream, options);
             return @object!;
         }
+
+        public static string ToJson(object @object)
+        {
+            return JsonSerializer.Serialize(@object, options);
+        }
+
+        public static T FromJson<T>(string json)
+        {
+            return JsonSerializer.Deserialize<T>(json, options)!;
+        }
     }
 }
