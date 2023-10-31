@@ -7,6 +7,12 @@ namespace Lynx
         readonly static HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA256;
         readonly static RSASignaturePadding padding = RSASignaturePadding.Pss;
 
+        public static (byte[] publicKey, byte[] privateKey) MakeKeys()
+        {
+            RSA RSA = RSA.Create();
+            return (RSA.ExportRSAPublicKey(), RSA.ExportRSAPrivateKey());
+        }
+
         public static byte[] Sign(byte[] privateKey, byte[] bytes)
         {
             RSA RSA = RSA.Create();

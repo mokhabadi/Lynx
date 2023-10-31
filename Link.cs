@@ -55,7 +55,7 @@ namespace Lynx
         {
             header.ContentSize = contentBytes.Length;
             byte[] headerBytes = await Packer.Pack(header);
-            byte[] bytes = new byte[] { (byte)headerBytes.Length }.Concat(headerBytes).Concat(contentBytes).ToArray();
+            byte[] bytes = new[] { (byte)headerBytes.Length }.Concat(headerBytes).Concat(contentBytes).ToArray();
             await stream.WriteAsync(bytes);
         }
 
