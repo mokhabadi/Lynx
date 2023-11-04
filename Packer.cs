@@ -23,7 +23,7 @@ namespace Lynx
             using DeflateStream deflateStream = new(memoryStream, CompressionLevel.SmallestSize, true);
             await JsonSerializer.SerializeAsync(deflateStream, @object, options);
             deflateStream.Close();
-            string json = JsonSerializer.Serialize(@object, options);//////////////////////
+            string json = ToJson(@object!);//////////////////////
             Debug.WriteLine($"Pack: {json.Length}->{memoryStream.Length}\n{json}");////////
             return memoryStream.ToArray();
         }
@@ -33,7 +33,7 @@ namespace Lynx
             MemoryStream memoryStream = new(bytes);
             using DeflateStream deflateStream = new(memoryStream, CompressionMode.Decompress, true);
             T? @object = await JsonSerializer.DeserializeAsync<T>(deflateStream, options);
-            string json = JsonSerializer.Serialize(@object, options);//////////////////////
+            string json = ToJson(@object!);//////////////////////
             Debug.WriteLine($"Unpack: {json.Length}->{memoryStream.Length}\n{json}");//////
             return @object!;
         }
