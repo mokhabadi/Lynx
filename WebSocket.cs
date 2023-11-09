@@ -74,6 +74,12 @@ namespace Lynx
                 return;
             }
 
+            if(webSocketReceiveResult.MessageType == WebSocketMessageType.Close) 
+            {
+                Disconnected();
+                return;
+            }
+
             memoryStream.Write(bytes, 0, webSocketReceiveResult.Count);
 
             if (webSocketReceiveResult.EndOfMessage == true)
