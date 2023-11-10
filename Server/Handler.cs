@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Lynx.Server
@@ -13,7 +14,8 @@ namespace Lynx.Server
 
         protected Handler()
         {
-            Name = GetType().GetInterfaces().Single(type => type != typeofIHandler).Name;
+            string interfaceName = GetType().GetInterfaces().Single(type => type != typeofIHandler).Name;
+            Name = Regex.Match(interfaceName, @"(?<=I)(.*)(?=Handler)").Value;
             executerMap = CreateExecuterMap(this);
             CreateRaisers(this);
         }
