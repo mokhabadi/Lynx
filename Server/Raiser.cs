@@ -18,7 +18,7 @@ namespace Lynx.Server
         {
             Header header = new(0, MessageType.Event, handler.Name, name);
             byte[] bytes = await Packer.Pack(content!);
-            await handler.Client.link.Send(header, bytes);
+            await handler.Client!.link.Send(header, bytes);
         }
     }
 }

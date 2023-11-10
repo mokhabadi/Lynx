@@ -10,7 +10,7 @@ namespace Lynx.Server
         readonly Dictionary<string, IExecuter>? executerMap;
 
         public string Name { get; private set; }
-        public Client Client { get; private set; }
+        public Client? Client { get; private set; }
 
         protected Handler()
         {
