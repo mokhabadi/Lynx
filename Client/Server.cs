@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading.Tasks;
 using System.Linq;
+using System;
 
 namespace Lynx.Client
 {
@@ -11,11 +12,14 @@ namespace Lynx.Client
     {
         Link link;
         long serial;
-        readonly Dictionary<string, Handler>? handlerMap;
+        readonly Dictionary<string, Handler>? handlerNameMap;
+        readonly Dictionary<Type, Handler>? handlerTypeMap;
 
         public Server()
         {
-            handlerMap = Handler.MakeHandlers(this)?.ToDictionary(handler => handler.Name);
+            Handler[]? handlers = Handler.MakeHandlers(this);
+            handlerNameMap = handlers?.ToDictionary(handler => handler.Name);
+            handlerTypeMap = handlers?.ToDictionary(handler => handler.GetType());
         }
 
         public async Task<bool> ConnectAsync(string domain, int port)
@@ -38,16 +42,15 @@ namespace Lynx.Client
             }
         }
 
-        public T Get<T>() where T : IHandler
+        public T Get<T>() where T : Handler
         {
-            IHandler handler = handlerMap![typeof(T).Name];
-            return (T)handler;
+            return (T)handlerTypeMap![typeof(T)];
         }
 
         void Received(Header header, byte[] bytes)
         {
             if (header.Type != MessageType.Event) return;
-            handlerMap![header.Handler].Receive(header.Command, bytes);
+            handlerNameMap![header.Handler].Receive(header.Command, bytes);
         }
 
         public async Task<byte[]> Send(string handler, string command, byte[] contentBytes)
