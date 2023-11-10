@@ -3,6 +3,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Lynx.Client
 {
@@ -14,7 +15,7 @@ namespace Lynx.Client
 
         public Server()
         {
-            handlerMap = Handler.CreateHandlerMap(this);
+            handlerMap = Handler.MakeHandlers(this)?.ToDictionary(handler => handler.Name);
         }
 
         public async Task<bool> ConnectAsync(string domain, int port)

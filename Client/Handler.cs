@@ -17,7 +17,7 @@ namespace Lynx.Client
         {
             string interfaceName = GetType().GetInterfaces().Single(type => type != typeofIHandler).Name;
             Name = Regex.Match(interfaceName, @"(?<=I)(.*)(?=Handler)").Value;
-            raiserMap = CreateRaiserMap(this);
+            raiserMap = MakeRaisers(this)?.ToDictionary(raiser => raiser.Name);
         }
 
         public void SetServer(Server server) => Server = server;

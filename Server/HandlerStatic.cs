@@ -13,8 +13,8 @@ namespace Lynx.Server
     {
         static readonly BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         static readonly HandlerMaker? HandlerMaker;
-        static readonly Dictionary<string, ExecuterMaker?> executerMakerMap = new();
-        static readonly Dictionary<string, RaiserMaker?> raiserMakerMap = new();
+        static readonly Dictionary<Type, ExecuterMaker?> executerMakerMap = new();
+        static readonly Dictionary<Type, RaiserMaker?> raiserMakerMap = new();
         static readonly Type typeofIHandler = typeof(IHandler);
         static readonly Type executerGeneric = typeof(Executer<,>);
         static readonly Type[] executerMakerTypes = new[] { typeof(Handler), typeof(MethodInfo) };
@@ -51,30 +51,29 @@ namespace Lynx.Server
                 }
 
                 HandlerMaker += () => (Handler)Activator.CreateInstance(handlerType)!;
-                executerMakerMap[handlerInterface.Name] = ExecuterMaker;
-                raiserMakerMap[handlerInterface.Name] = raiserMaker;
+                executerMakerMap[handlerType] = ExecuterMaker;
+                raiserMakerMap[handlerType] = raiserMaker;
             }
         }
 
-        public static Dictionary<string, Handler>? CreateHandlerMap(Client client)
+        public static Handler[]? MakeHandlers(Client client)
         {
             Handler[]? handlers = HandlerMaker?.GetInvocationList().Select(handlerMaker => ((HandlerMaker)handlerMaker)()).ToArray();
 
             foreach (Handler handler in handlers ?? Enumerable.Empty<Handler>())
                 handler.SetClient(client);
 
-            return handlers?.ToDictionary(handler => handler.Name);
+            return handlers;
         }
 
-        public static Dictionary<string, IExecuter>? CreateExecuterMap(Handler handler)
+        public static IEnumerable<IExecuter>? CreateExecuterMap(Handler handler)
         {
-            IEnumerable<IExecuter>? executers = executerMakerMap[handler.Name]?.GetInvocationList().Select(executerMaker => ((ExecuterMaker)executerMaker)(handler));
-            return executers?.ToDictionary(executer => executer.Name);
+            return executerMakerMap[handler.GetType()]?.GetInvocationList().Select(executerMaker => ((ExecuterMaker)executerMaker)(handler));
         }
 
         public static void CreateRaisers(Handler handler)
         {
-            raiserMakerMap[handler.Name]?.Invoke(handler);
+            raiserMakerMap[handler.GetType()]?.Invoke(handler);
         }
     }
 }

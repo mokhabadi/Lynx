@@ -12,7 +12,7 @@ namespace Lynx.Client
     {
         static readonly BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         static readonly HandlerMaker? HandlerMaker;
-        static readonly Dictionary<string, RaiserMaker?> raiserMakersMap = new();
+        static readonly Dictionary<Type, RaiserMaker?> raiserMakersMap = new();
         static readonly Type typeofIHandler = typeof(IHandler);
         static readonly Type typeofRaiser = typeof(Raiser<>);
         static readonly Type[] raiserMakerTypes = new[] { typeof(Handler), typeof(FieldInfo) };
@@ -36,24 +36,23 @@ namespace Lynx.Client
                 }
 
                 HandlerMaker += () => (Handler)Activator.CreateInstance(handlerType, flags, null, null, null)!;
-                raiserMakersMap[handlerInterface.Name] = RaiserMaker;
+                raiserMakersMap[handlerType] = RaiserMaker;
             }
         }
 
-        public static Dictionary<string, Handler>? CreateHandlerMap(Server server)
+        public static Handler[]? MakeHandlers(Server server)
         {
             Handler[]? handlers = HandlerMaker?.GetInvocationList().Select(handlerMaker => ((HandlerMaker)handlerMaker)()).ToArray();
 
             foreach (Handler handler in handlers ?? Enumerable.Empty<Handler>())
                 handler.SetServer(server);
 
-            return handlers?.ToDictionary(handler => handler.Name);
+            return handlers;
         }
 
-        public static Dictionary<string, IRaiser>? CreateRaiserMap(Handler handler)
+        public static IEnumerable<IRaiser>? MakeRaisers(Handler handler)
         {
-            IEnumerable<IRaiser>? raisers = raiserMakersMap[handler.Name]?.GetInvocationList().Select(raiserMaker => ((RaiserMaker)raiserMaker)(handler));
-            return raisers?.ToDictionary(raiser => raiser.Name);
+            return raiserMakersMap[handler.GetType()]?.GetInvocationList().Select(raiserMaker => ((RaiserMaker)raiserMaker)(handler));
         }
     }
 }

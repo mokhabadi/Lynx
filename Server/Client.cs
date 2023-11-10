@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lynx.Server
 {
@@ -17,7 +18,7 @@ namespace Lynx.Server
             this.link = link;
             link.Received += Received;
             link.Ended += End;
-            handlerMap = Handler.CreateHandlerMap(this);
+            handlerMap = Handler.MakeHandlers(this)?.ToDictionary(handler => handler.Name);
         }
 
         public void SetId(long id) => Id = id;
