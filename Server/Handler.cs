@@ -16,8 +16,8 @@ namespace Lynx.Server
         {
             string interfaceName = GetType().GetInterfaces().Single(type => type != typeofIHandler).Name;
             Name = Regex.Match(interfaceName, @"(?<=I)(.*)(?=Handler)").Value;
-            executerMap = CreateExecuterMap(this).ToDictionary(executer => executer.Name);
-            CreateRaisers(this);
+            executerMap = MakeExecuters(this)?.ToDictionary(executer => executer.Name);
+            MakeRaisers(this);
         }
 
         public void SetClient(Client client) => Client = client;

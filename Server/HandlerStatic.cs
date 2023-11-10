@@ -66,12 +66,12 @@ namespace Lynx.Server
             return handlers;
         }
 
-        public static IEnumerable<IExecuter>? CreateExecuterMap(Handler handler)
+        public static IEnumerable<IExecuter>? MakeExecuters(Handler handler)
         {
             return executerMakerMap[handler.GetType()]?.GetInvocationList().Select(executerMaker => ((ExecuterMaker)executerMaker)(handler));
         }
 
-        public static void CreateRaisers(Handler handler)
+        public static void MakeRaisers(Handler handler)
         {
             raiserMakerMap[handler.GetType()]?.Invoke(handler);
         }
