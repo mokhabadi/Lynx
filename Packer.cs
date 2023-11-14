@@ -38,7 +38,7 @@ namespace Lynx
             return @object!;
         }
 
-        public static string ToJson(object @object)
+        public static string ToJson<T>(T @object)
         {
             return JsonSerializer.Serialize(@object, options);
         }
