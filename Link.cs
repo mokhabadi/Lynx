@@ -9,8 +9,8 @@ namespace Lynx
     {
         readonly Stream stream;
 
-        public event Action<Header, byte[]> Received = delegate { };
-        public event Action<bool> Ended = delegate { };
+        public event Action<Header, byte[]>? Received;
+        public event Action<bool>? Ended;
 
         public Link(Stream stream)
         {
@@ -26,18 +26,18 @@ namespace Lynx
 
                 if (bytes[0] == 0)
                 {
-                    Ended(true);
+                    Ended?.Invoke(true);
                     return;
                 }
 
                 bytes = await Receive(bytes[0]);
                 Header header = await Packer.Unpack<Header>(bytes);
                 bytes = await Receive(header.ContentSize);
-                Received(header, bytes);
+                Received?.Invoke(header, bytes);
             }
             catch
             {
-                Ended(false);
+                Ended?.Invoke(false);
                 return;
             }
 

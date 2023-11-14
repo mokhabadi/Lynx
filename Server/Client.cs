@@ -12,7 +12,7 @@ namespace Lynx.Server
 
         public long Id { get; private set; }
 
-        public event Action<bool> Went = _ => { };
+        public event Action<bool>? Went;
 
         public Client(Link link)
         {
@@ -35,7 +35,7 @@ namespace Lynx.Server
         {
             link.Received -= Received;
             link.Ended -= End;
-            Went(proper);
+            Went?.Invoke(proper);
         }
 
         async void Received(Header header, byte[] bytes)

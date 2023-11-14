@@ -13,8 +13,8 @@ namespace Lynx
         WebSocketReceiveResult? webSocketReceiveResult;
         MemoryStream memoryStream = new();
 
-        public event Action Disconnected = delegate { };
-        public event Action<byte[]> Received = delegate { };
+        public event Action? Disconnected;
+        public event Action<byte[]>? Received;
 
         public async Task<bool> Connect(Uri uri)
         {
@@ -44,7 +44,7 @@ namespace Lynx
             }
             catch
             {
-                Disconnected();
+                Disconnected?.Invoke();
             }
         }
 
@@ -56,7 +56,7 @@ namespace Lynx
             }
             catch
             {
-                Disconnected();
+                Disconnected?.Invoke();
             }
         }
 
@@ -70,13 +70,13 @@ namespace Lynx
             }
             catch
             {
-                Disconnected();
+                Disconnected?.Invoke();
                 return;
             }
 
             if(webSocketReceiveResult.MessageType == WebSocketMessageType.Close) 
             {
-                Disconnected();
+                Disconnected?.Invoke();
                 return;
             }
 
@@ -84,7 +84,7 @@ namespace Lynx
 
             if (webSocketReceiveResult.EndOfMessage == true)
             {
-                Received(memoryStream.ToArray());
+                Received?.Invoke(memoryStream.ToArray());
                 memoryStream = new();
             }
 

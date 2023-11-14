@@ -27,7 +27,10 @@ namespace Lynx.Client
         public async void Raise(byte[] bytes)
         {
             Action<T>? EventAction = (Action<T>?)fieldInfo.GetValue(handler);
-            if (EventAction == null) return;
+
+            if (EventAction == null) 
+                return;
+
             T content = await Packer.Unpack<T>(bytes);
             EventAction(content);
         }

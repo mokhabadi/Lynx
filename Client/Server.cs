@@ -10,7 +10,7 @@ namespace Lynx.Client
 {
     public class Server
     {
-        Link link;
+        Link? link;
         long serial;
         readonly Dictionary<string, Handler>? handlerNameMap;
         readonly Dictionary<Type, Handler>? handlerTypeMap;
@@ -56,7 +56,7 @@ namespace Lynx.Client
         public async Task<byte[]> Send(string handler, string command, byte[] contentBytes)
         {
             Header header = new(++serial, MessageType.Request, handler, command);
-            await link.Send(header, contentBytes);
+            await link!.Send(header, contentBytes);
             Waiter waiter = new(header.Id);
             return await waiter.Wait(link);
         }
