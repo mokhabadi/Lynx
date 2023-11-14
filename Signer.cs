@@ -17,7 +17,7 @@ namespace Lynx
             var privateKey = Packer.ToJson(privateParameters);
             var publicKey = Packer.ToJson(publicParameters);
 
-            return (Encoding.UTF8.GetBytes(privateKey), Encoding.UTF8.GetBytes(publicKey));
+            return (Encoding.UTF8.GetBytes(publicKey), Encoding.UTF8.GetBytes(privateKey));
         }
 
         public static byte[] Sign(byte[] privateKey, byte[] bytes)
