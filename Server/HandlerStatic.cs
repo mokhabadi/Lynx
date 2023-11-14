@@ -38,7 +38,7 @@ namespace Lynx.Server
                     Type resultType = method.ReturnParameter.ParameterType.GetGenericArguments()[0];
                     Type parameterType = method.GetParameters()[0].ParameterType;
                     Type executerType = executerGeneric.MakeGenericType(parameterType, resultType);
-                    ConstructorInfo executerMaker = executerType.GetConstructor(flags, executerMakerTypes)!;
+                    ConstructorInfo executerMaker = executerType.GetConstructor(flags, null, executerMakerTypes, null)!;
                     ExecuterMaker += handler => (IExecuter)executerMaker.Invoke(new object[] { handler, method });
                 }
 
@@ -46,7 +46,7 @@ namespace Lynx.Server
                 {
                     Type parameterType = eventInfo.EventHandlerType!.GetGenericArguments()[0];
                     Type raiserType = typeofRaiser.MakeGenericType(parameterType);
-                    ConstructorInfo raiserConstructor = raiserType.GetConstructor(flags, raiserMakerTypes)!;
+                    ConstructorInfo raiserConstructor = raiserType.GetConstructor(flags, null, raiserMakerTypes, null)!;
                     raiserMaker += handler => raiserConstructor.Invoke(new object[] { handler, eventInfo });
                 }
 

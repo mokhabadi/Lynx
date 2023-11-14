@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 namespace Lynx.Server
 {
@@ -11,7 +12,7 @@ namespace Lynx.Server
         {
             this.handler = handler;
             name = eventInfo.Name;
-            eventInfo.AddEventHandler(handler, EventInvoked);
+            eventInfo.AddEventHandler(handler, (Action<T>)EventInvoked);
         }
 
         public async void EventInvoked(T content)

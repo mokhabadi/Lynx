@@ -20,7 +20,7 @@ namespace Lynx
         public static async Task<byte[]> Pack<T>(T @object)
         {
             MemoryStream memoryStream = new();
-            using DeflateStream deflateStream = new(memoryStream, CompressionLevel.SmallestSize, true);
+            using DeflateStream deflateStream = new(memoryStream, CompressionLevel.Optimal, true);
             await JsonSerializer.SerializeAsync(deflateStream, @object, options);
             deflateStream.Close();
             string json = ToJson(@object!);//////////////////////

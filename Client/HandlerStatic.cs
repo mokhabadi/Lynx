@@ -31,7 +31,7 @@ namespace Lynx.Client
                 {
                     Type raiserType = typeofRaiser.MakeGenericType(eventInfo.EventHandlerType!.GetGenericArguments()[0]);
                     FieldInfo fieldInfo = handlerType.GetField(eventInfo.Name, flags)!;
-                    ConstructorInfo raiserMaker = raiserType.GetConstructor(flags, raiserMakerTypes)!;
+                    ConstructorInfo raiserMaker = raiserType.GetConstructor(flags, null, raiserMakerTypes, null)!;
                     RaiserMaker += handler => (IRaiser)raiserMaker.Invoke(new object[] { handler, fieldInfo });
                 }
 
