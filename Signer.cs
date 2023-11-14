@@ -6,7 +6,7 @@ namespace Lynx
     public static class Signer
     {
         readonly static HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA256;
-        readonly static RSASignaturePadding padding = RSASignaturePadding.Pss;
+        readonly static RSASignaturePadding padding = RSASignaturePadding.Pkcs1;
 
         public static (byte[] publicKey, byte[] privateKey) MakeKeys()
         {
@@ -25,8 +25,8 @@ namespace Lynx
             var parameters = Packer.FromJson<RSAParameters>(Encoding.UTF8.GetString(privateKey));
             RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
             RSA.ImportParameters(parameters);
-
-            return RSA.SignData(bytes, hashAlgorithm, padding);
+            var signedData = RSA.SignData(bytes, hashAlgorithm, padding);
+            return signedData;
         }
 
         public static bool Verify(byte[] publicKey, byte[] bytes, byte[] signedBytes)
