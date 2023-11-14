@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Text;
 
 namespace Lynx
 {
@@ -9,21 +10,31 @@ namespace Lynx
 
         public static (byte[] publicKey, byte[] privateKey) MakeKeys()
         {
-            RSA RSA = RSA.Create();
-            return (RSA.ExportRSAPublicKey(), RSA.ExportRSAPrivateKey());
+            RSACryptoServiceProvider RSA = new RSACryptoServiceProvider(2048);
+            var privateParameters = RSA.ExportParameters(true);
+            var publicParameters = RSA.ExportParameters(false);
+
+            var privateKey = Packer.ToJson(privateParameters);
+            var publicKey = Packer.ToJson(publicParameters);
+
+            return (Encoding.UTF8.GetBytes(privateKey), Encoding.UTF8.GetBytes(publicKey));
         }
 
         public static byte[] Sign(byte[] privateKey, byte[] bytes)
         {
-            RSA RSA = RSA.Create();
-            RSA.ImportRSAPrivateKey(privateKey, out _);
+            var parameters = Packer.FromJson<RSAParameters>(Encoding.UTF8.GetString(privateKey));
+            RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
+            RSA.ImportParameters(parameters);
+
             return RSA.SignData(bytes, hashAlgorithm, padding);
         }
 
         public static bool Verify(byte[] publicKey, byte[] bytes, byte[] signedBytes)
         {
-            RSA RSA = RSA.Create();
-            RSA.ImportRSAPublicKey(publicKey, out _);
+            var parameters = Packer.FromJson<RSAParameters>(Encoding.UTF8.GetString(publicKey));
+            RSACryptoServiceProvider RSA = new RSACryptoServiceProvider();
+            RSA.ImportParameters(parameters);
+
             return RSA.VerifyData(bytes, signedBytes, hashAlgorithm, padding);
         }
     }
