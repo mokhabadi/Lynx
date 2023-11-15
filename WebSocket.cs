@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Net.WebSockets;
+﻿using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
@@ -9,16 +8,16 @@ namespace Lynx
 {
     public class WebSocket
     {
-        ClientWebSocket clientWebSocket = new();
-        WebSocketReceiveResult? webSocketReceiveResult;
-        MemoryStream memoryStream = new();
+        ClientWebSocket clientWebSocket = null!;
+        WebSocketReceiveResult result = null!;
+        readonly byte[] bytes = new byte[65536];
 
         public event Action? Disconnected;
         public event Action<byte[]>? Received;
 
         public async Task<bool> Connect(Uri uri)
         {
-            clientWebSocket = new ClientWebSocket();
+            clientWebSocket = new();
 
             try
             {
@@ -29,30 +28,26 @@ namespace Lynx
                 return false;
             }
 
-            memoryStream = new();
             Receive();
             return true;
         }
 
-        public async Task Send(string value)
+        public Task Send(string value)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(value);
-
-            try
-            {
-                await clientWebSocket.SendAsync(bytes, WebSocketMessageType.Text, true, CancellationToken.None);
-            }
-            catch
-            {
-                Disconnected?.Invoke();
-            }
+            return Send(bytes, WebSocketMessageType.Text);
         }
 
-        public async Task Send(byte[] bytes)
+        public Task Send(byte[] bytes)
+        {
+            return Send(bytes, WebSocketMessageType.Binary);
+        }
+
+        async Task Send(byte[] bytes, WebSocketMessageType type)
         {
             try
             {
-                await clientWebSocket.SendAsync(bytes, WebSocketMessageType.Binary, true, CancellationToken.None);
+                await clientWebSocket.SendAsync(bytes, type, true, CancellationToken.None);
             }
             catch
             {
@@ -62,11 +57,9 @@ namespace Lynx
 
         async void Receive()
         {
-            byte[] bytes = new byte[1048576];
-
             try
             {
-                webSocketReceiveResult = await clientWebSocket.ReceiveAsync(bytes, CancellationToken.None);
+                result = await clientWebSocket.ReceiveAsync(bytes, CancellationToken.None);
             }
             catch
             {
@@ -74,26 +67,26 @@ namespace Lynx
                 return;
             }
 
-            if(webSocketReceiveResult.MessageType == WebSocketMessageType.Close) 
+            if (result.MessageType == WebSocketMessageType.Close)
             {
                 Disconnected?.Invoke();
                 return;
             }
 
-            memoryStream.Write(bytes, 0, webSocketReceiveResult.Count);
-
-            if (webSocketReceiveResult.EndOfMessage == true)
+            if (!result.EndOfMessage)
             {
-                Received?.Invoke(memoryStream.ToArray());
-                memoryStream = new();
+                Disconnect();
+                return;
             }
 
+            Received?.Invoke(bytes[..result.Count]);
             Receive();
         }
 
         public void Disconnect()
         {
             clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, new CancellationToken());
+            Disconnected?.Invoke();
         }
     }
 }
