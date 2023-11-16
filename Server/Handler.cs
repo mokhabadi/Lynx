@@ -15,7 +15,7 @@ namespace Lynx.Server
         protected Handler()
         {
             string interfaceName = GetType().GetInterfaces().Single(type => type != typeofIHandler).Name;
-            Name = Regex.Match(interfaceName, @"(?=I)(.*)(?=Handler)").Value;
+            Name = Regex.Match(interfaceName, @"(?<=I)(.*)(?=Handler)").Value;
             executerMap = MakeExecuters(this)?.ToDictionary(executer => executer.Name);
             MakeRaisers(this);
         }
