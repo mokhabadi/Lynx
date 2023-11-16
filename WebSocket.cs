@@ -91,7 +91,7 @@ namespace Lynx
 
             stream.Write(bytes, 0, result.Count);
             Received?.Invoke(stream.ToArray());
-            stream.Position = 0;
+            stream.SetLength(0);
             Receive();
         }
 
