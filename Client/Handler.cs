@@ -11,7 +11,7 @@ namespace Lynx.Client
         readonly Dictionary<string, IRaiser>? raiserMap;
 
         public string Name { get; private set; }
-        public Server? Server { get; private set; }
+        public Server Server { get; private set; } = null!;
 
         protected Handler()
         {
@@ -20,7 +20,10 @@ namespace Lynx.Client
             raiserMap = MakeRaisers(this)?.ToDictionary(raiser => raiser.Name);
         }
 
-        public void SetServer(Server server) => Server = server;
+        public void SetServer(Server server)
+        {
+            Server = server;
+        }
 
         public void Receive(string command, byte[] bytes)
         {
@@ -31,7 +34,7 @@ namespace Lynx.Client
         {
             string command = Command.Method.Name;
             byte[] bytes = await Packer.Pack(content!);
-            bytes = await Server!.Send(Name, command, bytes);
+            bytes = await Server.Send(Name, command, bytes);
             return await Packer.Unpack<TResult>(bytes);
         }
     }

@@ -10,16 +10,16 @@ namespace Lynx.Client
 {
     public class Server
     {
-        Link? link;
+        readonly Dictionary<string, Handler> handlerNameMap;
+        readonly Dictionary<Type, Handler> handlerTypeMap;
+        Link link = null!;
         long serial;
-        readonly Dictionary<string, Handler>? handlerNameMap;
-        readonly Dictionary<Type, Handler>? handlerTypeMap;
 
         public Server()
         {
-            Handler[]? handlers = Handler.MakeHandlers(this);
-            handlerNameMap = handlers?.ToDictionary(handler => handler.Name);
-            handlerTypeMap = handlers?.ToDictionary(handler => handler.GetType());
+            Handler[] handlers = Handler.MakeHandlers(this);
+            handlerNameMap = handlers.ToDictionary(handler => handler.Name);
+            handlerTypeMap = handlers.ToDictionary(handler => handler.GetType());
         }
 
         public async Task<bool> ConnectAsync(string domain, int port)
@@ -44,19 +44,21 @@ namespace Lynx.Client
 
         public T Get<T>() where T : Handler
         {
-            return (T)handlerTypeMap![typeof(T)];
+            return (T)handlerTypeMap[typeof(T)];
         }
 
         void Received(Header header, byte[] bytes)
         {
-            if (header.Type != MessageType.Event) return;
-            handlerNameMap![header.Handler].Receive(header.Command, bytes);
+            if (header.Type != MessageType.Event)
+                return;
+
+            handlerNameMap[header.Handler].Receive(header.Command, bytes);
         }
 
         public async Task<byte[]> Send(string handler, string command, byte[] contentBytes)
         {
             Header header = new(++serial, MessageType.Request, handler, command);
-            await link!.Send(header, contentBytes);
+            await link.Send(header, contentBytes);
             Waiter waiter = new(header.Id);
             return await waiter.Wait(link);
         }

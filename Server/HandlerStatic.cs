@@ -12,7 +12,7 @@ namespace Lynx.Server
     public abstract partial class Handler
     {
         static readonly BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-        static readonly HandlerMaker? HandlerMaker;
+        static readonly HandlerMaker HandlerMaker = null!;
         static readonly Dictionary<Type, ExecuterMaker?> executerMakerMap = new();
         static readonly Dictionary<Type, RaiserMaker?> raiserMakerMap = new();
         static readonly Type typeofIHandler = typeof(IHandler);
@@ -56,11 +56,11 @@ namespace Lynx.Server
             }
         }
 
-        public static Handler[]? MakeHandlers(Client client)
+        public static Handler[] MakeHandlers(Client client)
         {
-            Handler[]? handlers = HandlerMaker?.GetInvocationList().Select(handlerMaker => ((HandlerMaker)handlerMaker)()).ToArray();
+            Handler[] handlers = HandlerMaker.GetInvocationList().Select(handlerMaker => ((HandlerMaker)handlerMaker)()).ToArray();
 
-            foreach (Handler handler in handlers ?? Enumerable.Empty<Handler>())
+            foreach (Handler handler in handlers)
                 handler.SetClient(client);
 
             return handlers;

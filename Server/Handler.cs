@@ -15,19 +15,19 @@ namespace Lynx.Server
         protected Handler()
         {
             string interfaceName = GetType().GetInterfaces().Single(type => type != typeofIHandler).Name;
-            Name = Regex.Match(interfaceName, @"(?<=I)(.*)(?=Handler)").Value;
+            Name = Regex.Match(interfaceName, @"(?=I)(.*)(?=Handler)").Value;
             executerMap = MakeExecuters(this)?.ToDictionary(executer => executer.Name);
             MakeRaisers(this);
         }
 
-        public void SetClient(Client client) => Client = client;
-
-        public virtual void Initialize() { }
-
-        public virtual Task Finalize()
+        public void SetClient(Client client)
         {
-            return Task.CompletedTask;
+            Client = client;
         }
+
+        public abstract void Initialize();
+
+        public abstract Task Finalize();
 
         public Task<byte[]> Receive(string command, byte[] bytes)
         {

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using System.Text;
+using System.IO;
 
 namespace Lynx
 {
@@ -11,6 +12,7 @@ namespace Lynx
         ClientWebSocket clientWebSocket = null!;
         WebSocketReceiveResult result = null!;
         readonly byte[] bytes = new byte[65536];
+        readonly MemoryStream stream = new();
 
         public event Action? Disconnected;
         public event Action<byte[]>? Received;
@@ -73,13 +75,23 @@ namespace Lynx
                 return;
             }
 
-            if (!result.EndOfMessage)
+            if (result.EndOfMessage && stream.Position == 0)
             {
-                Disconnect();
+                Received?.Invoke(bytes[..result.Count]);
+                Receive();
                 return;
             }
 
-            Received?.Invoke(bytes[..result.Count]);
+            if (!result.EndOfMessage)
+            {
+                stream.Write(bytes);
+                Receive();
+                return;
+            }
+
+            stream.Write(bytes, 0, result.Count);
+            Received?.Invoke(stream.ToArray());
+            stream.Position = 0;
             Receive();
         }
 

@@ -7,8 +7,8 @@ namespace Lynx.Server
     public class Client
     {
         readonly public Link link;
-        readonly Dictionary<string, Handler>? handlerNameMap;
-        readonly Dictionary<Type, Handler>? handlerTypeMap;
+        readonly Dictionary<string, Handler> handlerNameMap;
+        readonly Dictionary<Type, Handler> handlerTypeMap;
 
         public long Id { get; private set; }
 
@@ -19,16 +19,16 @@ namespace Lynx.Server
             this.link = link;
             link.Received += Received;
             link.Ended += End;
-            Handler[]? handlers = Handler.MakeHandlers(this);
-            handlerNameMap = handlers?.ToDictionary(handler => handler.Name);
-            handlerTypeMap = handlers?.ToDictionary(handler => handler.GetType());
+            Handler[] handlers = Handler.MakeHandlers(this);
+            handlerNameMap = handlers.ToDictionary(handler => handler.Name);
+            handlerTypeMap = handlers.ToDictionary(handler => handler.GetType());
         }
 
         public void SetId(long id) => Id = id;
 
         public T Get<T>() where T : Handler
         {
-            return (T)handlerTypeMap![typeof(T)];
+            return (T)handlerTypeMap[typeof(T)];
         }
 
         void End(bool proper)
@@ -40,7 +40,7 @@ namespace Lynx.Server
 
         async void Received(Header header, byte[] bytes)
         {
-            bytes = await handlerNameMap![header.Handler].Receive(header.Command, bytes);
+            bytes = await handlerNameMap[header.Handler].Receive(header.Command, bytes);
             await link.Send(header, bytes);
         }
     }
