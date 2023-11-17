@@ -13,14 +13,13 @@ namespace Lynx.Client
         static readonly BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         static readonly HandlerMaker HandlerMaker = null!;
         static readonly Dictionary<Type, RaiserMaker?> raiserMakersMap = new();
-        static readonly Type typeofIHandler = typeof(IHandler);
         static readonly Type typeofRaiser = typeof(Raiser<>);
         static readonly Type[] raiserMakerTypes = new[] { typeof(Handler), typeof(FieldInfo) };
 
         static Handler()
         {
             Type[] types = Assembly.GetExecutingAssembly().GetTypes();
-            IEnumerable<Type> handlerInterfaces = types.Where(type => type.IsInterface && type != typeofIHandler && typeofIHandler.IsAssignableFrom(type));
+            IEnumerable<Type> handlerInterfaces = types.Where(type => type.GetCustomAttribute<HandlerAttribute>() != null);
 
             foreach (Type handlerInterface in handlerInterfaces)
             {

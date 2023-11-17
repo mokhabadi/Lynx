@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Lynx.Client
 {
-    public abstract partial class Handler : IHandler
+    public abstract partial class Handler
     {
         readonly Dictionary<string, IRaiser>? raiserMap;
 
@@ -15,8 +15,8 @@ namespace Lynx.Client
 
         protected Handler()
         {
-            string interfaceName = GetType().GetInterfaces().Single(type => type != typeofIHandler).Name;
-            Name = Regex.Match(interfaceName, @"(?<=I)(.*)(?=Handler)").Value;
+            Type interfaceType = GetType().GetInterfaces().Single();
+            Name = interfaceType.GetCustomAttribute<HandlerAttribute>()!.Name;
             raiserMap = MakeRaisers(this)?.ToDictionary(raiser => raiser.Name);
         }
 

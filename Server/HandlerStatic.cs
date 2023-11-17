@@ -15,7 +15,6 @@ namespace Lynx.Server
         static readonly HandlerMaker HandlerMaker = null!;
         static readonly Dictionary<Type, ExecuterMaker?> executerMakerMap = new();
         static readonly Dictionary<Type, RaiserMaker?> raiserMakerMap = new();
-        static readonly Type typeofIHandler = typeof(IHandler);
         static readonly Type executerGeneric = typeof(Executer<,>);
         static readonly Type[] executerMakerTypes = new[] { typeof(Handler), typeof(MethodInfo) };
         static readonly Type[] raiserMakerTypes = new[] { typeof(Handler), typeof(EventInfo) };
@@ -24,7 +23,7 @@ namespace Lynx.Server
         static Handler()
         {
             Type[] types = Assembly.GetExecutingAssembly().GetTypes();
-            IEnumerable<Type> handlerInterfaces = types.Where(type => type.IsInterface && type != typeofIHandler && typeofIHandler.IsAssignableFrom(type));
+            IEnumerable<Type> handlerInterfaces = types.Where(type => type.GetCustomAttribute<HandlerAttribute>() != null);
 
             foreach (Type handlerInterface in handlerInterfaces)
             {
