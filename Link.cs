@@ -31,7 +31,7 @@ namespace Lynx
                 }
 
                 bytes = await Receive(bytes[0]);
-                Header header = await Packer.Unpack<Header>(bytes);
+                Header header = Packer.Unpack<Header>(bytes);
                 bytes = await Receive(header.ContentSize);
                 Received?.Invoke(header, bytes);
             }
@@ -54,7 +54,7 @@ namespace Lynx
         public async Task Send(Header header, byte[] contentBytes)
         {
             header.ContentSize = contentBytes.Length;
-            byte[] headerBytes = await Packer.Pack(header);
+            byte[] headerBytes = Packer.Pack(header);
             byte[] bytes = new[] { (byte)headerBytes.Length }.Concat(headerBytes).Concat(contentBytes).ToArray();
             await stream.WriteAsync(bytes);
         }

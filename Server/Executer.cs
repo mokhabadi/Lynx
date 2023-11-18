@@ -29,11 +29,11 @@ namespace Lynx.Server
 
         public async Task<byte[]> Run(byte[] bytes)
         {
-            T content = await Packer.Unpack<T>(bytes);
+            T content = Packer.Unpack<T>(bytes);
             handler.Initialize();
             TResult result = await Method(content);
             await handler.Finalize();
-            return await Packer.Pack(result);
+            return Packer.Pack(result);
         }
     }
 }

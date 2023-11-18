@@ -24,14 +24,14 @@ namespace Lynx.Client
             Name = fieldInfo.Name;
         }
 
-        public async void Raise(byte[] bytes)
+        public void Raise(byte[] bytes)
         {
             Action<T>? EventAction = (Action<T>?)fieldInfo.GetValue(handler);
 
-            if (EventAction == null) 
+            if (EventAction == null)
                 return;
 
-            T content = await Packer.Unpack<T>(bytes);
+            T content = Packer.Unpack<T>(bytes);
             EventAction(content);
         }
     }

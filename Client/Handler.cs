@@ -33,9 +33,9 @@ namespace Lynx.Client
         public async Task<TResult> Send<T, TResult>(Func<T, Task<TResult>> Command, T content)
         {
             string command = Command.Method.Name;
-            byte[] bytes = await Packer.Pack(content!);
+            byte[] bytes = Packer.Pack(content!);
             bytes = await Server.Send(Name, command, bytes);
-            return await Packer.Unpack<TResult>(bytes);
+            return Packer.Unpack<TResult>(bytes);
         }
     }
 }
