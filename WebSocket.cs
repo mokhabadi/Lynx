@@ -2,8 +2,10 @@
 using System.Threading.Tasks;
 using System.Threading;
 using System;
-using System.Text;
 using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using Segment = System.ArraySegment<byte>;
 
 namespace Lynx
 {
@@ -13,7 +15,7 @@ namespace Lynx
         readonly ClientWebSocket clientWebSocket = new();
         readonly MemoryStream stream = new(1024);
         WebSocketReceiveResult result = null!;
-        ArraySegment<byte> segment;
+        Segment segment;
 
         public event Action? Disconnected;
         public event Func<MemoryStream, Task>? Received;
@@ -34,22 +36,11 @@ namespace Lynx
             return true;
         }
 
-        public Task Send(string value)
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes(value);
-            return Send(bytes, WebSocketMessageType.Text);
-        }
-
-        public Task Send(byte[] bytes)
-        {
-            return Send(bytes, WebSocketMessageType.Binary);
-        }
-
-        async Task Send(byte[] bytes, WebSocketMessageType type)
+        public async Task Send(Segment bytes)
         {
             try
             {
-                await clientWebSocket.SendAsync(bytes, type, true, none);
+                await clientWebSocket.SendAsync(bytes, WebSocketMessageType.Text, true, none);
             }
             catch
             {
@@ -86,7 +77,13 @@ namespace Lynx
             }
 
             stream.SetLength(segment.Offset + result.Count);
-            await Received?.Invoke(stream);
+
+            if (Received != null)
+            {
+                IEnumerable<Task> tasks = Received.GetInvocationList().Select(method => ((Func<MemoryStream, Task>)method)(stream));
+                await Task.WhenAll(tasks);
+            }
+
             segment = new(stream.GetBuffer());
             Receive();
             return;
