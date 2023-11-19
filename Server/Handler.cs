@@ -19,12 +19,12 @@ namespace Lynx.Server
             Type interfaceType = GetType().GetInterfaces().Single();
             Name = interfaceType.GetCustomAttribute<HandlerAttribute>()!.Name;
             executerMap = MakeExecuters(this)?.ToDictionary(executer => executer.Name)!;
-            MakeRaisers(this);
         }
 
         public void SetClient(Client client)
         {
             Client = client;
+            MakeRaisers(this);
         }
 
         public abstract void Initialize();

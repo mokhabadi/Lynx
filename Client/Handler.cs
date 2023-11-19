@@ -36,9 +36,9 @@ namespace Lynx.Client
         {
             string command = Command.Method.Name;
             stream.SetLength(0);
-            Packer.Pack(content!, stream);
+            await Packer.Pack(content!, stream);
             var resultStream = await Server.Send(Name, command, stream);
-            return Packer.Unpack<TResult>(resultStream);
+            return await Packer.Unpack<TResult>(resultStream);
         }
     }
 }

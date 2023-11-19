@@ -23,14 +23,14 @@ namespace Lynx.Client
             Name = fieldInfo.Name;
         }
 
-        public override void Raise(Stream stream)
+        public override async void Raise(Stream stream)
         {
             Action<T>? EventAction = (Action<T>?)fieldInfo.GetValue(handler);
 
             if (EventAction == null)
                 return;
 
-            T content = Packer.Unpack<T>(stream);
+            T content = await Packer.Unpack<T>(stream);
             EventAction(content);
         }
     }

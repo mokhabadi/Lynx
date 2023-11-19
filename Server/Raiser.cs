@@ -19,7 +19,7 @@ namespace Lynx.Server
 
         public async void EventInvoked(T content)
         {
-            Packer.Pack(content!, stream);
+            await Packer.Pack(content!, stream);
             await link.Send(header, stream);
         }
     }

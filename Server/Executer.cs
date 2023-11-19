@@ -29,11 +29,11 @@ namespace Lynx.Server
 
         public override async Task<MemoryStream> Run(Stream stream)
         {
-            T content = Packer.Unpack<T>(stream);
+            T content = await Packer.Unpack<T>(stream);
             handler.Initialize();
             TResult result = await Method(content);
             await handler.Finalize();
-            Packer.Pack(result, resultStream);
+            await Packer.Pack(result, resultStream);
             return resultStream;
         }
     }
