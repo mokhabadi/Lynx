@@ -3,7 +3,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Lynx
 {
@@ -17,22 +16,22 @@ namespace Lynx
             IncludeFields = true,
         };
 
-        public static async Task<byte[]> Pack<T>(T @object)
+        public static byte[] Pack<T>(T @object)
         {
             MemoryStream memoryStream = new();
             using DeflateStream deflateStream = new(memoryStream, CompressionLevel.Optimal, true);
-            await JsonSerializer.SerializeAsync(deflateStream, @object, options);
+            JsonSerializer.Serialize(deflateStream, @object, options);
             deflateStream.Close();
             string json = ToJson(@object!);//////////////////////
             Debug.WriteLine($"Pack: {json.Length}->{memoryStream.Length}\n{json}");////////
             return memoryStream.ToArray();
         }
 
-        public static async Task<T> Unpack<T>(byte[] bytes)
+        public static T Unpack<T>(byte[] bytes)
         {
             MemoryStream memoryStream = new(bytes);
             using DeflateStream deflateStream = new(memoryStream, CompressionMode.Decompress, true);
-            T? @object = await JsonSerializer.DeserializeAsync<T>(deflateStream, options);
+            T? @object = JsonSerializer.Deserialize<T>(deflateStream, options);
             string json = ToJson(@object!);//////////////////////
             Debug.WriteLine($"Unpack: {json.Length}->{memoryStream.Length}\n{json}");//////
             return @object!;
