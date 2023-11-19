@@ -6,7 +6,7 @@ using System.Linq;
 namespace Lynx.Client
 {
     using HandlerMaker = Func<Handler>;
-    using RaiserMaker = Func<Handler, IRaiser>;
+    using RaiserMaker = Func<Handler, Raiser>;
 
     public abstract partial class Handler
     {
@@ -31,7 +31,7 @@ namespace Lynx.Client
                     Type raiserType = typeofRaiser.MakeGenericType(eventInfo.EventHandlerType!.GetGenericArguments()[0]);
                     FieldInfo fieldInfo = handlerType.GetField(eventInfo.Name, flags)!;
                     ConstructorInfo raiserMaker = raiserType.GetConstructor(flags, null, raiserMakerTypes, null)!;
-                    RaiserMaker += handler => (IRaiser)raiserMaker.Invoke(new object[] { handler, fieldInfo });
+                    RaiserMaker += handler => (Raiser)raiserMaker.Invoke(new object[] { handler, fieldInfo });
                 }
 
                 HandlerMaker += () => (Handler)Activator.CreateInstance(handlerType, flags, null, null, null)!;
@@ -49,7 +49,7 @@ namespace Lynx.Client
             return handlers;
         }
 
-        public static IEnumerable<IRaiser>? MakeRaisers(Handler handler)
+        public static IEnumerable<Raiser>? MakeRaisers(Handler handler)
         {
             return raiserMakersMap[handler.GetType()]?.GetInvocationList().Select(raiserMaker => ((RaiserMaker)raiserMaker)(handler));
         }

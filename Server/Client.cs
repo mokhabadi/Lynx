@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Lynx.Server
@@ -38,10 +39,10 @@ namespace Lynx.Server
             Went?.Invoke(proper);
         }
 
-        async void Received(Header header, byte[] bytes)
+        async void Received(Header header, Stream stream)
         {
-            bytes = await handlerNameMap[header.Handler].Receive(header.Command, bytes);
-            await link.Send(header, bytes);
+            MemoryStream resultStream = await handlerNameMap[header.Handler].Receive(header.Command, stream);
+            await link.Send(header, resultStream);
         }
     }
 }

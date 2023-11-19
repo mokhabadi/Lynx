@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Lynx
@@ -8,8 +7,11 @@ namespace Lynx
     public class Link
     {
         readonly Stream stream;
+        readonly MemoryStream headerStream = new();
+        readonly MemoryStream sendStream = new();
+        readonly MemoryStream receiveStream = new();
 
-        public event Action<Header, byte[]>? Received;
+        public event Action<Header, MemoryStream>? Received;
         public event Action<bool>? Ended;
 
         public Link(Stream stream)
@@ -22,18 +24,19 @@ namespace Lynx
         {
             try
             {
-                byte[] bytes = await Receive(1);
+                await Receive(1);
+                byte headerSize = receiveStream.GetBuffer()[0];
 
-                if (bytes[0] == 0)
+                if (headerSize == 0)
                 {
                     Ended?.Invoke(true);
                     return;
                 }
 
-                bytes = await Receive(bytes[0]);
-                Header header = Packer.Unpack<Header>(bytes);
-                bytes = await Receive(header.ContentSize);
-                Received?.Invoke(header, bytes);
+                await Receive(headerSize);
+                Header header = Packer.Unpack<Header>(receiveStream);
+                await Receive(header.ContentSize);
+                Received?.Invoke(header, receiveStream);
             }
             catch
             {
@@ -44,19 +47,20 @@ namespace Lynx
             Receive();
         }
 
-        async Task<byte[]> Receive(int size)
+        async Task Receive(long size)
         {
-            byte[] bytes = new byte[size];
-            await stream.ReadAsync(bytes);
-            return bytes;
+            receiveStream.SetLength(size);
+            await stream.ReadAsync(receiveStream.GetBuffer().AsMemory(0, (int)size));
         }
 
-        public async Task Send(Header header, byte[] contentBytes)
+        public async Task Send(Header header, MemoryStream contentStream)
         {
-            header.ContentSize = contentBytes.Length;
-            byte[] headerBytes = Packer.Pack(header);
-            byte[] bytes = new[] { (byte)headerBytes.Length }.Concat(headerBytes).Concat(contentBytes).ToArray();
-            await stream.WriteAsync(bytes);
+            header.ContentSize = contentStream.Length;
+            Packer.Pack(header, headerStream);
+            sendStream.WriteByte((byte)headerStream.Length);
+            sendStream.Write(headerStream.GetBuffer(), 0, (int)headerStream.Length);
+            sendStream.Write(contentStream.GetBuffer(), 0, (int)contentStream.Length);
+            await stream.WriteAsync(sendStream.GetBuffer().AsMemory(0, (int)sendStream.Length));
         }
 
         public void Close()

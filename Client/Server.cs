@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
+using System.IO;
 
 namespace Lynx.Client
 {
@@ -47,18 +48,18 @@ namespace Lynx.Client
             return (T)handlerTypeMap[typeof(T)];
         }
 
-        void Received(Header header, byte[] bytes)
+        void Received(Header header, Stream stream)
         {
             if (header.Type != MessageType.Event)
                 return;
 
-            handlerNameMap[header.Handler].Receive(header.Command, bytes);
+            handlerNameMap[header.Handler].Receive(header.Command, stream);
         }
 
-        public async Task<byte[]> Send(string handler, string command, byte[] contentBytes)
+        public async Task<Stream> Send(string handler, string command, MemoryStream contentStream)
         {
             Header header = new(++serial, MessageType.Request, handler, command);
-            await link.Send(header, contentBytes);
+            await link.Send(header, contentStream);
             Waiter waiter = new(header.Id);
             return await waiter.Wait(link);
         }

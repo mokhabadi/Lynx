@@ -1,21 +1,20 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 
 namespace Lynx.Client
 {
-    public interface IRaiser
+    public abstract class Raiser
     {
-        string Name { get; }
+        public string Name { get; protected set; } = null!;
 
-        void Raise(byte[] bytes);
+        public abstract void Raise(Stream stream);
     }
 
-    public class Raiser<T> : IRaiser
+    public class Raiser<T> : Raiser
     {
         readonly Handler handler;
         readonly FieldInfo fieldInfo;
-
-        public string Name { get; }
 
         protected Raiser(Handler handler, FieldInfo fieldInfo)
         {
@@ -24,14 +23,14 @@ namespace Lynx.Client
             Name = fieldInfo.Name;
         }
 
-        public void Raise(byte[] bytes)
+        public override void Raise(Stream stream)
         {
             Action<T>? EventAction = (Action<T>?)fieldInfo.GetValue(handler);
 
             if (EventAction == null)
                 return;
 
-            T content = Packer.Unpack<T>(bytes);
+            T content = Packer.Unpack<T>(stream);
             EventAction(content);
         }
     }

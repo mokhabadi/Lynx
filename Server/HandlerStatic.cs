@@ -6,7 +6,7 @@ using System.Linq;
 namespace Lynx.Server
 {
     using HandlerMaker = Func<Handler>;
-    using ExecuterMaker = Func<Handler, IExecuter>;
+    using ExecuterMaker = Func<Handler, Executer>;
     using RaiserMaker = Action<Handler>;
 
     public abstract partial class Handler
@@ -38,7 +38,7 @@ namespace Lynx.Server
                     Type parameterType = method.GetParameters()[0].ParameterType;
                     Type executerType = executerGeneric.MakeGenericType(parameterType, resultType);
                     ConstructorInfo executerMaker = executerType.GetConstructor(flags, null, executerMakerTypes, null)!;
-                    ExecuterMaker += handler => (IExecuter)executerMaker.Invoke(new object[] { handler, method });
+                    ExecuterMaker += handler => (Executer)executerMaker.Invoke(new object[] { handler, method });
                 }
 
                 foreach (EventInfo eventInfo in handlerInterface.GetEvents())
@@ -65,7 +65,7 @@ namespace Lynx.Server
             return handlers;
         }
 
-        public static IEnumerable<IExecuter>? MakeExecuters(Handler handler)
+        public static IEnumerable<Executer>? MakeExecuters(Handler handler)
         {
             return executerMakerMap[handler.GetType()]?.GetInvocationList().Select(executerMaker => ((ExecuterMaker)executerMaker)(handler));
         }

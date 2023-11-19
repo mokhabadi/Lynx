@@ -1,25 +1,26 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 
 namespace Lynx.Server
 {
     class Raiser<T>
     {
-        readonly Handler handler;
-        readonly string name;
+        readonly Link link;
+        readonly Header header;
+        readonly MemoryStream stream = new();
 
         public Raiser(Handler handler, EventInfo eventInfo)
         {
-            this.handler = handler;
-            name = eventInfo.Name;
+            link = handler.Client.link;
             eventInfo.AddEventHandler(handler, (Action<T>)EventInvoked);
+            header = new(0, MessageType.Event, handler.Name, eventInfo.Name);
         }
 
         public async void EventInvoked(T content)
         {
-            Header header = new(0, MessageType.Event, handler.Name, name);
-            byte[] bytes = Packer.Pack(content!);
-            await handler.Client!.link.Send(header, bytes);
+            Packer.Pack(content!, stream);
+            await link.Send(header, stream);
         }
     }
 }

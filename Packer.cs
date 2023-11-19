@@ -16,24 +16,22 @@ namespace Lynx
             IncludeFields = true,
         };
 
-        public static byte[] Pack<T>(T @object)
+        public static void Pack<T>(T @object, Stream stream)
         {
-            MemoryStream memoryStream = new();
-            using DeflateStream deflateStream = new(memoryStream, CompressionLevel.Optimal, true);
+            stream.SetLength(0);
+            using DeflateStream deflateStream = new(stream, CompressionLevel.Optimal, true);
             JsonSerializer.Serialize(deflateStream, @object, options);
             deflateStream.Close();
             string json = ToJson(@object!);//////////////////////
-            Debug.WriteLine($"Pack: {json.Length}->{memoryStream.Length}\n{json}");////////
-            return memoryStream.ToArray();
+            Debug.WriteLine($"Pack: {json.Length}->{stream.Length}\n{json}");////////
         }
 
-        public static T Unpack<T>(byte[] bytes)
+        public static T Unpack<T>(Stream stream)
         {
-            MemoryStream memoryStream = new(bytes);
-            using DeflateStream deflateStream = new(memoryStream, CompressionMode.Decompress, true);
+            using DeflateStream deflateStream = new(stream, CompressionMode.Decompress, true);
             T? @object = JsonSerializer.Deserialize<T>(deflateStream, options);
             string json = ToJson(@object!);//////////////////////
-            Debug.WriteLine($"Unpack: {json.Length}->{memoryStream.Length}\n{json}");//////
+            Debug.WriteLine($"Unpack: {json.Length}->{stream.Length}\n{json}");//////
             return @object!;
         }
 

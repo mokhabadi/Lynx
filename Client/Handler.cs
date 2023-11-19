@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -8,7 +9,8 @@ namespace Lynx.Client
 {
     public abstract partial class Handler
     {
-        readonly Dictionary<string, IRaiser>? raiserMap;
+        readonly Dictionary<string, Raiser>? raiserMap;
+        readonly MemoryStream stream = new();
 
         public string Name { get; private set; }
         public Server Server { get; private set; } = null!;
@@ -25,17 +27,18 @@ namespace Lynx.Client
             Server = server;
         }
 
-        public void Receive(string command, byte[] bytes)
+        public void Receive(string command, Stream stream)
         {
-            raiserMap?[command].Raise(bytes);
+            raiserMap?[command].Raise(stream);
         }
 
         public async Task<TResult> Send<T, TResult>(Func<T, Task<TResult>> Command, T content)
         {
             string command = Command.Method.Name;
-            byte[] bytes = Packer.Pack(content!);
-            bytes = await Server.Send(Name, command, bytes);
-            return Packer.Unpack<TResult>(bytes);
+            stream.SetLength(0);
+            Packer.Pack(content!, stream);
+            var resultStream = await Server.Send(Name, command, stream);
+            return Packer.Unpack<TResult>(resultStream);
         }
     }
 }

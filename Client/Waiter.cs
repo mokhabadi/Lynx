@@ -1,31 +1,32 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace Lynx.Client
 {
     public class Waiter
     {
         readonly long requestId;
-        readonly TaskCompletionSource<byte[]> taskCompletionSource = new();
+        readonly TaskCompletionSource<Stream> taskCompletionSource = new();
 
         public Waiter(long requestId)
         {
             this.requestId = requestId;
         }
 
-        public async Task<byte[]> Wait(Link link)
+        public async Task<Stream> Wait(Link link)
         {
             link.Received += Received;
-            byte[] bytes = await taskCompletionSource.Task;
+            Stream stream = await taskCompletionSource.Task;
             link.Received -= Received;
-            return bytes;
+            return stream;
         }
 
-        void Received(Header header, byte[] bytes)
+        void Received(Header header, Stream stream)
         {
             if (header.Id != requestId)
                 return;
 
-            taskCompletionSource.SetResult(bytes);
+            taskCompletionSource.SetResult(stream);
         }
     }
 }
