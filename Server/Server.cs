@@ -9,7 +9,7 @@ namespace Lynx.Server
     {
         readonly X509Certificate x509Certificate;
 
-        public event Action<Client>? ClientCome;
+        public event Action<Client>? Accept;
 
         public Server(X509Certificate x509Certificate)
         {
@@ -29,7 +29,7 @@ namespace Lynx.Server
             await stream.AuthenticateAsServerAsync(x509Certificate, false, true);
             Link link = new(stream);
             Client client = new(link);
-            ClientCome?.Invoke(client);
+            Accept?.Invoke(client);
         }
     }
 }

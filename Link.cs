@@ -12,7 +12,7 @@ namespace Lynx
         readonly MemoryStream receiveStream = new();
 
         public event Action<Header, MemoryStream>? Received;
-        public event Action<bool>? Ended;
+        public event Action<bool>? Closed;
 
         public Link(Stream stream)
         {
@@ -29,7 +29,7 @@ namespace Lynx
 
                 if (headerSize == 0)
                 {
-                    Ended?.Invoke(true);
+                    Closed?.Invoke(true);
                     return;
                 }
 
@@ -40,7 +40,7 @@ namespace Lynx
             }
             catch
             {
-                Ended?.Invoke(false);
+                Closed?.Invoke(false);
                 return;
             }
 

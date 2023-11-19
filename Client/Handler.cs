@@ -9,7 +9,7 @@ namespace Lynx.Client
 {
     public abstract partial class Handler
     {
-        readonly Dictionary<string, Raiser>? raiserMap;
+        readonly Dictionary<string, Raiser> raiserMap;
         readonly MemoryStream stream = new();
 
         public string Name { get; private set; }
@@ -19,7 +19,7 @@ namespace Lynx.Client
         {
             Type interfaceType = GetType().GetInterfaces().Single();
             Name = interfaceType.GetCustomAttribute<HandlerAttribute>()!.Name;
-            raiserMap = MakeRaisers(this)?.ToDictionary(raiser => raiser.Name);
+            raiserMap = MakeRaisers(this)?.ToDictionary(raiser => raiser.Name)!;
         }
 
         public void SetServer(Server server)
@@ -29,15 +29,14 @@ namespace Lynx.Client
 
         public void Receive(string command, Stream stream)
         {
-            raiserMap?[command].Raise(stream);
+            raiserMap[command].Raise(stream);
         }
 
         public async Task<TResult> Send<T, TResult>(Func<T, Task<TResult>> Command, T content)
         {
             string command = Command.Method.Name;
-            stream.SetLength(0);
-            await Packer.Pack(content!, stream);
-            var resultStream = await Server.Send(Name, command, stream);
+            await Packer.Pack(content, stream);
+            Stream resultStream = await Server.Send(Name, command, stream);
             return await Packer.Unpack<TResult>(resultStream);
         }
     }

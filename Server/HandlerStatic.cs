@@ -14,11 +14,11 @@ namespace Lynx.Server
         static readonly BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         static readonly HandlerMaker HandlerMaker = null!;
         static readonly Dictionary<Type, ExecuterMaker?> executerMakerMap = new();
-        static readonly Dictionary<Type, RaiserMaker?> raiserMakerMap = new();
-        static readonly Type executerGeneric = typeof(Executer<,>);
+        static readonly Type typeofExecuter = typeof(Executer<,>);
         static readonly Type[] executerMakerTypes = new[] { typeof(Handler), typeof(MethodInfo) };
-        static readonly Type[] raiserMakerTypes = new[] { typeof(Handler), typeof(EventInfo) };
+        static readonly Dictionary<Type, RaiserMaker?> raiserMakerMap = new();
         static readonly Type typeofRaiser = typeof(Raiser<>);
+        static readonly Type[] raiserMakerTypes = new[] { typeof(Handler), typeof(EventInfo) };
 
         static Handler()
         {
@@ -36,7 +36,7 @@ namespace Lynx.Server
                 {
                     Type resultType = method.ReturnParameter.ParameterType.GetGenericArguments()[0];
                     Type parameterType = method.GetParameters()[0].ParameterType;
-                    Type executerType = executerGeneric.MakeGenericType(parameterType, resultType);
+                    Type executerType = typeofExecuter.MakeGenericType(parameterType, resultType);
                     ConstructorInfo executerMaker = executerType.GetConstructor(flags, null, executerMakerTypes, null)!;
                     ExecuterMaker += handler => (Executer)executerMaker.Invoke(new object[] { handler, method });
                 }

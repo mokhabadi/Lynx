@@ -22,9 +22,9 @@ namespace Lynx
             stream.SetLength(0);
             using DeflateStream deflateStream = new(stream, CompressionLevel.Optimal, true);
             await JsonSerializer.SerializeAsync(deflateStream, @object, options);
-            deflateStream.Close();
-            string json = ToJson(@object!);//////////////////////
-            Debug.WriteLine($"Pack: {json.Length}->{stream.Length}\n{json}");////////
+            deflateStream.Close();///////////////////////////////////////////////
+            string json = ToJson(@object!);//////////////////////////////////////
+            Debug.WriteLine($"Pack: {json.Length}->{stream.Length}\n{json}");////
         }
 
         public static async Task<T> Unpack<T>(Stream stream)
@@ -32,8 +32,8 @@ namespace Lynx
             stream.Position = 0;
             using DeflateStream deflateStream = new(stream, CompressionMode.Decompress, true);
             T? @object = await JsonSerializer.DeserializeAsync<T>(deflateStream, options);
-            string json = ToJson(@object!);//////////////////////
-            Debug.WriteLine($"Unpack: {json.Length}->{stream.Length}\n{json}");//////
+            string json = ToJson(@object!);////////////////////////////////////////
+            Debug.WriteLine($"Unpack: {json.Length}->{stream.Length}\n{json}");////
             return @object!;
         }
 

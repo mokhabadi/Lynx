@@ -9,27 +9,27 @@ namespace Lynx
 {
     public class WebSocket
     {
-        ClientWebSocket clientWebSocket = null!;
+        readonly CancellationToken none = CancellationToken.None;
+        readonly ClientWebSocket clientWebSocket = new();
+        readonly MemoryStream stream = new(1024);
         WebSocketReceiveResult result = null!;
-        readonly byte[] bytes = new byte[65536];
-        readonly MemoryStream stream = new();
+        ArraySegment<byte> segment;
 
         public event Action? Disconnected;
-        public event Action<byte[]>? Received;
+        public event Func<MemoryStream, Task>? Received;
 
         public async Task<bool> Connect(Uri uri)
         {
-            clientWebSocket = new();
-
             try
             {
-                await clientWebSocket.ConnectAsync(uri, CancellationToken.None);
+                await clientWebSocket.ConnectAsync(uri, none);
             }
             catch
             {
                 return false;
             }
 
+            segment = new(stream.GetBuffer());
             Receive();
             return true;
         }
@@ -49,7 +49,7 @@ namespace Lynx
         {
             try
             {
-                await clientWebSocket.SendAsync(bytes, type, true, CancellationToken.None);
+                await clientWebSocket.SendAsync(bytes, type, true, none);
             }
             catch
             {
@@ -61,7 +61,8 @@ namespace Lynx
         {
             try
             {
-                result = await clientWebSocket.ReceiveAsync(bytes, CancellationToken.None);
+                stream.SetLength(stream.Capacity);
+                result = await clientWebSocket.ReceiveAsync(segment, none);
             }
             catch
             {
@@ -75,29 +76,25 @@ namespace Lynx
                 return;
             }
 
-            if (result.EndOfMessage && stream.Position == 0)
-            {
-                Received?.Invoke(bytes[..result.Count]);
-                Receive();
-                return;
-            }
-
             if (!result.EndOfMessage)
             {
-                stream.Write(bytes);
+                int size = stream.GetBuffer().Length;
+                stream.SetLength(size * 2);
+                segment = new(stream.GetBuffer(), size, size);
                 Receive();
                 return;
             }
 
-            stream.Write(bytes, 0, result.Count);
-            Received?.Invoke(stream.ToArray());
-            stream.SetLength(0);
+            stream.SetLength(segment.Offset + result.Count);
+            await Received?.Invoke(stream);
+            segment = new(stream.GetBuffer());
             Receive();
+            return;
         }
 
         public void Disconnect()
         {
-            clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, new CancellationToken());
+            clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, none);
             Disconnected?.Invoke();
         }
     }
