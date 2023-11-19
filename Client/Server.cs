@@ -62,5 +62,10 @@ namespace Lynx.Client
             Waiter waiter = new(header.Id);
             return await waiter.Wait(link);
         }
+
+        public void Close()
+        {
+            link.Close();
+        }
     }
 }
