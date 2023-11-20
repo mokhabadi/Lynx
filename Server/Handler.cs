@@ -31,7 +31,7 @@ namespace Lynx.Server
 
         public abstract Task Finalize();
 
-        public Task<MemoryStream> Receive(string command, Stream contentStream)
+        public Task<MemoryStream> Receive(string command, MemoryStream contentStream)
         {
             return executerMap[command].Run(contentStream);
         }

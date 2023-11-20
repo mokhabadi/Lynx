@@ -48,7 +48,7 @@ namespace Lynx.Client
             return (T)handlerTypeMap[typeof(T)];
         }
 
-        void Received(Header header, Stream stream)
+        void Received(Header header, MemoryStream stream)
         {
             if (header.Type != MessageType.Event)
                 return;
@@ -56,9 +56,10 @@ namespace Lynx.Client
             handlerNameMap[header.Handler].Receive(header.Command, stream);
         }
 
-        public async Task<Stream> Send(string handler, string command, MemoryStream contentStream)
+        public async Task<MemoryStream> Send(string handler, string command, MemoryStream contentStream)
         {
-            Header header = new(++serial, MessageType.Request, handler, command);
+            serial++;
+            Header header = new(serial, MessageType.Request, handler, command);
             await link.Send(header, contentStream);
             Waiter waiter = new(header.Id);
             return await waiter.Wait(link);

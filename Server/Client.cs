@@ -35,7 +35,7 @@ namespace Lynx.Server
             return (T)handlerTypeMap[typeof(T)];
         }
 
-        async void Received(Header header, Stream contentStream)
+        async void Received(Header header, MemoryStream contentStream)
         {
             MemoryStream resultStream = await handlerNameMap[header.Handler].Receive(header.Command, contentStream);
             await Link.Send(header, resultStream);

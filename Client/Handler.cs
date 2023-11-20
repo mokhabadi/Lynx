@@ -27,7 +27,7 @@ namespace Lynx.Client
             Server = server;
         }
 
-        public void Receive(string command, Stream stream)
+        public void Receive(string command, MemoryStream stream)
         {
             raiserMap[command].Raise(stream);
         }
@@ -36,7 +36,7 @@ namespace Lynx.Client
         {
             string command = Command.Method.Name;
             await Packer.Pack(content, contentStream);
-            Stream resultStream = await Server.Send(Name, command, contentStream);
+            MemoryStream resultStream = await Server.Send(Name, command, contentStream);
             return await Packer.Unpack<TResult>(resultStream);
         }
     }

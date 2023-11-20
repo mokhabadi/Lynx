@@ -13,7 +13,7 @@ namespace Lynx
     {
         readonly CancellationToken none = CancellationToken.None;
         readonly ClientWebSocket clientWebSocket = new();
-        readonly MemoryStream stream = new(1024);
+        readonly MemoryStream stream = new(65536);
         WebSocketReceiveResult result = null!;
         Segment segment;
 

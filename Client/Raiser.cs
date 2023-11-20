@@ -8,7 +8,7 @@ namespace Lynx.Client
     {
         public string Name { get; protected set; } = null!;
 
-        public abstract void Raise(Stream stream);
+        public abstract void Raise(MemoryStream stream);
     }
 
     public class Raiser<T> : Raiser
@@ -23,7 +23,7 @@ namespace Lynx.Client
             Name = fieldInfo.Name;
         }
 
-        public override async void Raise(Stream stream)
+        public override async void Raise(MemoryStream stream)
         {
             Action<T>? EventAction = (Action<T>?)fieldInfo.GetValue(handler);
 

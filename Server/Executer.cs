@@ -9,7 +9,7 @@ namespace Lynx.Server
     {
         public string Name { get; protected set; } = null!;
 
-        public abstract Task<MemoryStream> Run(Stream stream);
+        public abstract Task<MemoryStream> Run(MemoryStream stream);
     }
 
     public class Executer<T, TResult> : Executer
@@ -27,7 +27,7 @@ namespace Lynx.Server
             Method = (Command)Delegate.CreateDelegate(typeof(Command), handler, commandMethod);
         }
 
-        public override async Task<MemoryStream> Run(Stream contentStream)
+        public override async Task<MemoryStream> Run(MemoryStream contentStream)
         {
             T content = await Packer.Unpack<T>(contentStream);
             handler.Initialize();
