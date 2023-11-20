@@ -12,7 +12,7 @@ namespace Lynx.Server
 
         public Raiser(Handler handler, EventInfo eventInfo)
         {
-            link = handler.Client.link;
+            link = handler.Client.Link;
             eventInfo.AddEventHandler(handler, (Action<T>)EventInvoked);
             header = new(0, MessageType.Event, handler.Name, eventInfo.Name);
         }

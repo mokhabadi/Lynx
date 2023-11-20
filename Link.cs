@@ -1,20 +1,21 @@
 ﻿using System;
 using System.IO;
+using System.Net.Security;
 using System.Threading.Tasks;
 
 namespace Lynx
 {
     public class Link
     {
-        readonly Stream stream;
-        readonly MemoryStream headerStream = new();
-        readonly MemoryStream sendStream = new();
-        readonly MemoryStream receiveStream = new();
+        readonly SslStream stream;
+        readonly MemoryStream headerStream = new(256);
+        readonly MemoryStream sendStream = new(65536);
+        readonly MemoryStream receiveStream = new(65536);
 
         public event Action<Header, MemoryStream>? Received;
         public event Action<bool>? Closed;
 
-        public Link(Stream stream)
+        public Link(SslStream stream)
         {
             this.stream = stream;
             Receive();
@@ -49,18 +50,20 @@ namespace Lynx
 
         async Task Receive(long size)
         {
+            receiveStream.Position = 0;
             receiveStream.SetLength(size);
             await stream.ReadAsync(receiveStream.GetBuffer().AsMemory(0, (int)size));
         }
 
         public async Task Send(Header header, MemoryStream contentStream)
         {
-            header.ContentSize = contentStream.Length;
+            header.ContentSize = contentStream.Position;
             await Packer.Pack(header, headerStream);
-            sendStream.WriteByte((byte)headerStream.Length);
-            sendStream.Write(headerStream.GetBuffer(), 0, (int)headerStream.Length);
-            sendStream.Write(contentStream.GetBuffer(), 0, (int)contentStream.Length);
-            await stream.WriteAsync(sendStream.GetBuffer().AsMemory(0, (int)sendStream.Length));
+            sendStream.Position = 0;
+            sendStream.WriteByte((byte)headerStream.Position);
+            sendStream.Write(headerStream.GetBuffer(), 0, (int)headerStream.Position);
+            sendStream.Write(contentStream.GetBuffer(), 0, (int)contentStream.Position);
+            await stream.WriteAsync(sendStream.GetBuffer().AsMemory(0, (int)sendStream.Position));
         }
 
         public void Close()

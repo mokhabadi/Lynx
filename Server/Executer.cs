@@ -27,9 +27,9 @@ namespace Lynx.Server
             Method = (Command)Delegate.CreateDelegate(typeof(Command), handler, commandMethod);
         }
 
-        public override async Task<MemoryStream> Run(Stream stream)
+        public override async Task<MemoryStream> Run(Stream contentStream)
         {
-            T content = await Packer.Unpack<T>(stream);
+            T content = await Packer.Unpack<T>(contentStream);
             handler.Initialize();
             TResult result = await Method(content);
             await handler.Finalize();

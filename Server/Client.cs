@@ -7,17 +7,17 @@ namespace Lynx.Server
 {
     public class Client
     {
-        readonly public Link link;
         readonly Dictionary<string, Handler> handlerNameMap;
         readonly Dictionary<Type, Handler> handlerTypeMap;
 
         public long Id { get; private set; }
+        public Link Link { get; private set; }
 
         public event Action<bool>? Closed;
 
         public Client(Link link)
         {
-            this.link = link;
+            Link = link;
             link.Received += Received;
             link.Closed += Close;
             Handler[] handlers = Handler.MakeHandlers(this);
@@ -35,16 +35,16 @@ namespace Lynx.Server
             return (T)handlerTypeMap[typeof(T)];
         }
 
-        async void Received(Header header, Stream stream)
+        async void Received(Header header, Stream contentStream)
         {
-            MemoryStream resultStream = await handlerNameMap[header.Handler].Receive(header.Command, stream);
-            await link.Send(header, resultStream);
+            MemoryStream resultStream = await handlerNameMap[header.Handler].Receive(header.Command, contentStream);
+            await Link.Send(header, resultStream);
         }
 
         void Close(bool proper)
         {
-            link.Received -= Received;
-            link.Closed -= Close;
+            Link.Received -= Received;
+            Link.Closed -= Close;
             Closed?.Invoke(proper);
         }
     }

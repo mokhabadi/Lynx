@@ -10,7 +10,7 @@ namespace Lynx.Client
     public abstract partial class Handler
     {
         readonly Dictionary<string, Raiser> raiserMap;
-        readonly MemoryStream stream = new();
+        readonly MemoryStream contentStream = new();
 
         public string Name { get; private set; }
         public Server Server { get; private set; } = null!;
@@ -35,8 +35,8 @@ namespace Lynx.Client
         public async Task<TResult> Send<T, TResult>(Func<T, Task<TResult>> Command, T content)
         {
             string command = Command.Method.Name;
-            await Packer.Pack(content, stream);
-            Stream resultStream = await Server.Send(Name, command, stream);
+            await Packer.Pack(content, contentStream);
+            Stream resultStream = await Server.Send(Name, command, contentStream);
             return await Packer.Unpack<TResult>(resultStream);
         }
     }
