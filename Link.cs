@@ -7,7 +7,7 @@ namespace Lynx
 {
     public class Link
     {
-        readonly SslStream stream;
+        readonly SslStream sslStream;
         readonly MemoryStream sendHeader = new(256);
         readonly MemoryStream sendContent = new(65536);
         readonly MemoryStream receiveHeader = new(256);
@@ -16,9 +16,9 @@ namespace Lynx
         public event Action<Header, MemoryStream>? Received;
         public event Action<bool>? Closed;
 
-        public Link(SslStream stream)
+        public Link(SslStream sslStream)
         {
-            this.stream = stream;
+            this.sslStream = sslStream;
             Receive();
         }
 
@@ -53,7 +53,7 @@ namespace Lynx
         {
             stream.Position = 0;
             stream.SetLength(size);
-            await stream.ReadAsync(stream.GetBuffer().AsMemory(0, (int)size));
+            await sslStream.ReadAsync(stream.GetBuffer().AsMemory(0, (int)size));
         }
 
         public async Task Send(Header header, MemoryStream contentStream)
@@ -64,12 +64,12 @@ namespace Lynx
             sendContent.WriteByte((byte)sendHeader.Length);
             sendContent.Write(sendHeader.GetBuffer(), 0, (int)sendHeader.Length);
             sendContent.Write(contentStream.GetBuffer(), 0, (int)contentStream.Length);
-            await stream.WriteAsync(sendContent.GetBuffer().AsMemory(0, (int)sendContent.Length));
+            await sslStream.WriteAsync(sendContent.GetBuffer().AsMemory(0, (int)sendContent.Length));
         }
 
         public void Close()
         {
-            stream.Close();
+            sslStream.Close();
         }
     }
 }
