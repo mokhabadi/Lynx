@@ -39,12 +39,12 @@ namespace Lynx.Client
             }
         }
 
-        public static Handler[] MakeHandlers(Server server)
+        public static Handler[] MakeHandlers(Client client)
         {
             Handler[] handlers = HandlerMaker.GetInvocationList().Select(handlerMaker => ((HandlerMaker)handlerMaker)()).ToArray();
 
             foreach (Handler handler in handlers)
-                handler.SetServer(server);
+                handler.SetServer(client);
 
             return handlers;
         }

@@ -13,7 +13,7 @@ namespace Lynx.Client
         readonly MemoryStream contentStream = new();
 
         public string Name { get; private set; }
-        public Server Server { get; private set; } = null!;
+        public Client Client { get; private set; } = null!;
 
         protected Handler()
         {
@@ -22,9 +22,9 @@ namespace Lynx.Client
             raiserMap = MakeRaisers(this)?.ToDictionary(raiser => raiser.Name)!;
         }
 
-        public void SetServer(Server server)
+        public void SetServer(Client client)
         {
-            Server = server;
+            Client = client;
         }
 
         public void Receive(string command, MemoryStream stream)
@@ -36,7 +36,7 @@ namespace Lynx.Client
         {
             string command = Command.Method.Name;
             await Packer.Pack(content, contentStream);
-            MemoryStream resultStream = await Server.Send(Name, command, contentStream);
+            MemoryStream resultStream = await Client.Send(Name, command, contentStream);
             return await Packer.Unpack<TResult>(resultStream);
         }
     }

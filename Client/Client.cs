@@ -9,14 +9,14 @@ using System.IO;
 
 namespace Lynx.Client
 {
-    public class Server
+    public class Client
     {
         readonly Dictionary<string, Handler> handlerNameMap;
         readonly Dictionary<Type, Handler> handlerTypeMap;
         Link link = null!;
         long serial;
 
-        public Server()
+        public Client()
         {
             Handler[] handlers = Handler.MakeHandlers(this);
             handlerNameMap = handlers.ToDictionary(handler => handler.Name);
