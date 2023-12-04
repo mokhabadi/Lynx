@@ -30,7 +30,7 @@ namespace Lynx.Client
                 ServicePointManager.DnsRefreshTimeout = 0;
                 IPAddress[] addresses = await Dns.GetHostAddressesAsync(domain);
                 TcpClient tcpClient = new() { NoDelay = true };
-                await tcpClient.ConnectAsync(IPAddress.Loopback, port);
+                await tcpClient.ConnectAsync(addresses, port);
                 SslStream sslStream = new(tcpClient.GetStream());
                 await sslStream.AuthenticateAsClientAsync(domain);
                 link = new(sslStream);
