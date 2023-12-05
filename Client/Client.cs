@@ -1,26 +1,24 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
-using System.Linq;
-using System;
-using System.IO;
 
 namespace Lynx.Client
 {
     public class Client
     {
-        readonly Dictionary<string, Handler> handlerNameMap;
-        readonly Dictionary<Type, Handler> handlerTypeMap;
+        readonly Dictionary<string, Handler> handlerMap;
         Link link = null!;
         long serial;
 
         public Client()
         {
             Handler[] handlers = Handler.MakeHandlers(this);
-            handlerNameMap = handlers.ToDictionary(handler => handler.Name);
-            handlerTypeMap = handlers.ToDictionary(handler => handler.GetType());
+            handlerMap = handlers.ToDictionary(handler => handler.Name);
         }
 
         public async Task<bool> ConnectAsync(string domain, int port)
@@ -43,9 +41,10 @@ namespace Lynx.Client
             }
         }
 
-        public T Get<T>() where T : Handler
+        public T Get<T>() where T : class
         {
-            return (T)handlerTypeMap[typeof(T)];
+            string Name = typeof(T).GetCustomAttribute<HandlerAttribute>()!.Name;
+            return (handlerMap[Name] as T)!;
         }
 
         void Received(Header header, MemoryStream stream)
@@ -53,7 +52,7 @@ namespace Lynx.Client
             if (header.Type != MessageType.Event)
                 return;
 
-            handlerNameMap[header.Handler].Receive(header.Command, stream);
+            handlerMap[header.Handler].Receive(header.Command, stream);
         }
 
         public async Task<MemoryStream> Send(string handler, string command, MemoryStream contentStream)

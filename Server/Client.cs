@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Lynx.Server
 {
     public class Client
     {
-        readonly Dictionary<string, Handler> handlerNameMap;
-        readonly Dictionary<Type, Handler> handlerTypeMap;
+        readonly Dictionary<string, Handler> handlerMap;
 
         public long Id { get; private set; }
         public Link Link { get; private set; }
@@ -21,8 +21,7 @@ namespace Lynx.Server
             link.Received += Received;
             link.Closed += Close;
             Handler[] handlers = Handler.MakeHandlers(this);
-            handlerNameMap = handlers.ToDictionary(handler => handler.Name);
-            handlerTypeMap = handlers.ToDictionary(handler => handler.GetType());
+            handlerMap = handlers.ToDictionary(handler => handler.Name);
         }
 
         public void SetId(long id)
@@ -30,14 +29,15 @@ namespace Lynx.Server
             Id = id;
         }
 
-        public T Get<T>() where T : Handler
+        public T Get<T>() where T : class
         {
-            return (T)handlerTypeMap[typeof(T)];
+            string Name = typeof(T).GetCustomAttribute<HandlerAttribute>()!.Name;
+            return (handlerMap[Name] as T)!;
         }
 
         async void Received(Header header, MemoryStream contentStream)
         {
-            MemoryStream resultStream = await handlerNameMap[header.Handler].Receive(header.Command, contentStream);
+            MemoryStream resultStream = await handlerMap[header.Handler].Receive(header.Command, contentStream);
             await Link.Send(header, resultStream);
         }
 

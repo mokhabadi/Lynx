@@ -27,9 +27,14 @@ namespace Lynx.Server
             MakeRaisers(this);
         }
 
-        public abstract void Initialize();
+        public virtual void Initialize()
+        {
+        }
 
-        public abstract Task Finalize();
+        public virtual Task Finalize()
+        {
+            return Task.CompletedTask;
+        }
 
         public Task<MemoryStream> Receive(string command, MemoryStream contentStream)
         {
