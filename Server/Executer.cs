@@ -30,7 +30,7 @@ namespace Lynx.Server
         public override async Task<MemoryStream> Run(MemoryStream contentStream)
         {
             T content = await Packer.Unpack<T>(contentStream);
-            handler.Initialize();
+            await handler.Initialize();
             TResult result = await Method(content);
             await handler.Finalize();
             await Packer.Pack(result, resultStream);

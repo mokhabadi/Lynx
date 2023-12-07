@@ -27,8 +27,9 @@ namespace Lynx.Server
             MakeRaisers(this);
         }
 
-        public virtual void Initialize()
+        public virtual Task Initialize()
         {
+            return Task.CompletedTask;
         }
 
         public virtual Task Finalize()
