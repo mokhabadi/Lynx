@@ -58,7 +58,7 @@ namespace Lynx.Client
         public async Task<MemoryStream> Send(string handler, string command, MemoryStream contentStream)
         {
             serial++;
-            Header header = new(serial, MessageType.Request, handler, command);
+            Header header = new() { Id = serial, Type = MessageType.Request, Handler = handler, Command = command };
             await link.Send(header, contentStream);
             Waiter waiter = new(header.Id);
             return await waiter.Wait(link);

@@ -15,6 +15,7 @@ namespace Lynx
             Converters = { new JsonStringEnumConverter() },
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
             IncludeFields = true,
+            IgnoreReadOnlyProperties = true,
         };
 
         public static async Task Pack<T>(T @object, MemoryStream stream)

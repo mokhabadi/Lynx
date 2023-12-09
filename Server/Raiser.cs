@@ -14,7 +14,7 @@ namespace Lynx.Server
         {
             link = handler.Client.Link;
             eventInfo.AddEventHandler(handler, (Action<T>)EventInvoked);
-            header = new(0, MessageType.Event, handler.Name, eventInfo.Name);
+            header = new() { Type = MessageType.Event, Handler = handler.Name, Command = eventInfo.Name };
         }
 
         public async void EventInvoked(T content)
