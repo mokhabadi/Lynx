@@ -24,7 +24,8 @@ namespace Lynx
         {
             try
             {
-                await clientWebSocket.ConnectAsync(uri, none);
+                CancellationTokenSource tokenSource = new(TimeSpan.FromSeconds(5));
+                await clientWebSocket.ConnectAsync(uri, tokenSource.Token);
             }
             catch
             {
